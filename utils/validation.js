@@ -5,7 +5,9 @@ const schema = Joi.object({
 
     email: Joi.string().email(),
 
-    phone: Joi.string()
+    phone: Joi.string(),
+
+    favorite: Joi.boolean()
 
 });
 
