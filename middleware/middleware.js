@@ -21,10 +21,13 @@ passport.use(new passportJWT.Strategy(params, (payload, done) => {
 }));
 
 const auth = (req, res, next) => {
-    passport.authenticate("jwt", { session: false }, (error, user) => {
-        console.log(req.headers);
-        if (!req.headers.authorization) res.status(401).json({ message: "Not authorized" })
-        // else {}
+    passport.authenticate("jwt", { session: false }, (err, user) => {
+        const token = req.headers.authorization.slice(7);
+        if (token !== user.token || !user || err) {
+            return res.status(401).json({ message: "Not authorized" });
+        }
+        req.user = user;
+        next();
     })(req, res, next);
 };
 

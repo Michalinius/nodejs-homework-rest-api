@@ -1,4 +1,3 @@
-const UserService = require('./service');
 const { userSchema } = require('../../utils/validation.js')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
@@ -41,27 +40,30 @@ const login = async (req, res, next) => {
 
     const payload = {
         id: user._id,
-        username: user.email,
+        email: user.email,
     };
-
-    console.log(user.id)
 
     const token = jwt.sign(payload, process.env.jwtSecret, { expiresIn: "1h" });
-    console.log(token)
     await User.findByIdAndUpdate(user.id, { token });
-    return res.json({ token });
+    return res.status(200).json({ token });
 };
 
-const authorization = async (req, res, next) => {
-    {
-        const { username } = req.user;
-        return res.json({
-            message: `Authorization successful: ${username}`, data: {
-                secret: "Najpierw mleko potem płatki"
-            }
-        });
-    };
+const logout = async (req, res, next) => {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) res.status(401).json({ message: "Not authorized" })
+    else {
+        await User.findByIdAndUpdate(user.id, { token: null });
+        res.status(204).json({ message: "No content" });
+    }
 }
 
+const userSubscription = async (req, res, next) => {
+    const user = await User.findOne({ token: req.user.token });
+    if (!user) res.status(401).json({ message: "Not authorized" });
+    else res.status(200).json({ email: user.email, subscription: user.subscription })
+};
 
-module.exports = { register, login }
+
+
+
+module.exports = { register, login, logout, userSubscription }
