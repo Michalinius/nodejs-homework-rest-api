@@ -11,4 +11,16 @@ const schema = Joi.object({
 
 });
 
-module.exports = { schema };
+const userSchema = Joi.object({
+    password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{6,30}$')),
+
+    email: Joi.string().email(),
+
+    subscription: Joi.string(),
+
+    token: Joi.string()
+
+});
+
+
+module.exports = { schema, userSchema };

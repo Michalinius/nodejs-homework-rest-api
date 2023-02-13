@@ -1,5 +1,4 @@
 const express = require('express')
-const { schema } = require("../../utils/validation")
 const { getAllContacts, getContactById, createContact, updateContact, deleteContact, updateStatusContact } = require('../../modules/contacts/controller.js')
 const router = express.Router()
 
