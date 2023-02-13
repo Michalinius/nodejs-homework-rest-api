@@ -19,6 +19,7 @@ const User = mongoose.model("users", mongoose.Schema({
         type: String,
         default: null,
     },
+    avatarURL: { type: String },
 }))
 
 module.exports = { User };

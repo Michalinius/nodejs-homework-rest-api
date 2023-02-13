@@ -2,6 +2,12 @@ const { userSchema } = require('../../utils/validation.js')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const { User } = require('./model');
+const gravatar = require('gravatar')
+const { upload, UPLOAD_DIR, IMAGES_DIR } = require('../../middleware/uploads')
+const path = require('path')
+const fs = require('fs/promises')
+const Jimp = require('jimp')
+
 
 const register = async (req, res, next) => {
     const validation = userSchema.validate(req.body)
@@ -14,13 +20,12 @@ const register = async (req, res, next) => {
     else {
         try {
             const hashedPwd = await bcrypt.hash(req.body.password, 10);
-            const response = await User.create({ email: req.body.email, password: hashedPwd });
+            const response = await User.create({ email: req.body.email, password: hashedPwd, avatarURL: gravatar.url(req.body.email, { s: '200', r: 'pg', d: 'retro' }) });
             res.status(201).json(response)
         } catch (error) {
             next(error);
         }
     }
-
 };
 
 const login = async (req, res, next) => {
@@ -63,7 +68,23 @@ const userSubscription = async (req, res, next) => {
     else res.status(200).json({ email: user.email, subscription: user.subscription })
 };
 
+const uploadAvatar = async (req, res, next) => {
+    try {
+        const { path: temporaryname, originalname } = req.file;
+        const image = await Jimp.read(temporaryname);
+        await image.resize(250, 250);
+        const name = req.user.email.slice(0, req.user.email.indexOf("@")) + temporaryname.slice(temporaryname.indexOf("."))
+        const filename = path.join(IMAGES_DIR, name);
+        await image.writeAsync(filename)
+        await fs.unlink(temporaryname);
+        await User.findByIdAndUpdate(req.user.id, { avatarURL: "/avatars/" + name })
+        res.status(200).json({ message: filename })
+    } catch (error) {
+        await fs.unlink(temporaryname);
+        return res.sendStatus(500);
+    }
+}
 
 
 
-module.exports = { register, login, logout, userSubscription }
+module.exports = { register, login, logout, userSubscription, uploadAvatar }

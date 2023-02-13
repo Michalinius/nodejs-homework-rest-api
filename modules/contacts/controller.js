@@ -80,4 +80,5 @@ const updateStatusContact = async (req, res) => {
     res.status(200).json(updatedContact);
 };
 
+
 module.exports = { getAllContacts, getContactById, createContact, updateContact, deleteContact, updateStatusContact }
